@@ -14,7 +14,7 @@ public static class TimeUtil
     public static double RealNowD => RealNow.TotalSeconds;
     public static float RealNowF => (float)RealNow.TotalSeconds;
     
-    // SimulationTime time (stops ticking when paused, affected by time scale)
+    // Simulation time (stops ticking when paused, affected by time scale)
     public static TimeSpan SimNow { get; private set; }
     public static double SimNowD => SimNow.TotalSeconds;
     public static float SimNowF => (float)SimNow.TotalSeconds;
@@ -22,22 +22,23 @@ public static class TimeUtil
     public static double TimeScale { get; set; } = 1.0;
     public static bool IsPaused => TimeScale <= 0.0;
 
+    /// <summary>
+    /// Advances the simulation time and returns the scaled delta.
+    /// Call this EXACTLY ONCE per frame in your main loop.
+    /// </summary>
     public static TimeSpan Tick()
     {
         var currentReal = _clock.Elapsed;
         var delta = currentReal - _lastRealTime;
         _lastRealTime = currentReal;
 
-        // If paused, delta is zero. Otherwise, apply scale.
         if (TimeScale > 0)
         {
             var scaledDelta = TimeSpan.FromTicks((long)(delta.Ticks * TimeScale));
             SimNow += scaledDelta;
-            
             return scaledDelta;
         }
         
         return TimeSpan.Zero;
     }
 }
-
