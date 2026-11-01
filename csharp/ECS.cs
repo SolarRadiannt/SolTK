@@ -11,13 +11,12 @@ public static class ECS
     );
 
     public static World World => _world.Value;
-    public static Entity Entity(string? name)
+    public static Entity Entity(string? name = null)
     {
         var entity = World.Spawn();
         if (name != null)
-        {
             entity.Add(new Name(name));
-        }
+        
         return entity;
     }
 

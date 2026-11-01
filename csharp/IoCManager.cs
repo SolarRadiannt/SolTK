@@ -17,7 +17,7 @@ public static class IoCManager
 {
     private static readonly Dictionary<Type, object> _services = [];
 
-    public static void InitAll(Assembly? targetAssembly)
+    public static void InitAll(Assembly? targetAssembly = null)
     {
         targetAssembly ??= Assembly.GetCallingAssembly(); 
 
