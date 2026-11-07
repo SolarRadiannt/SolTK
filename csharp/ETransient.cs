@@ -1,6 +1,6 @@
 namespace SolTK;
 using fennecs;
-
+using SolTK.Components;
 public struct Transient;
 
 public class ETransient : ISystem, IProcessable

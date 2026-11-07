@@ -7,7 +7,8 @@ public static class EntityExtensions
 {
     private static World world => ECS.World;
 	public static string Name(this Entity entity) => ECS.Name(entity);
-	
+	public static Entity QueueDespawn(this Entity entity) => ECS.QueueDespawn(entity);
+
 	public static Entity[] Targets<R>(this Entity entity) =>
         [.. world.Query()
 			.Has<R>(entity)

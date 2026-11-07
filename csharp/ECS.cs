@@ -1,11 +1,17 @@
 namespace SolTK;
 
+using SolTK.Components;
 using fennecs;
 
-public record struct Name(string Value);
+
 
 public static class ECS
 {
+    static ECS()
+    {
+        Scheduler.Register(FlushDespawn, STKPriority.Flush);
+    }
+
     private static readonly Lazy<World> _world = new(
         () => new World()
     );
@@ -20,6 +26,8 @@ public static class ECS
         return entity;
     }
 
+    public static Entity QueueDespawn(Entity entity) => entity.Add<MarkDespawn>();
+
     public static string Name(Entity entity)
     {
         if (entity.Has<Name>())
@@ -27,4 +35,7 @@ public static class ECS
         else
             return entity.ToRaw().ToString();
     }
+
+    private static Stream<MarkDespawn> _markedDespawn = World.Stream<MarkDespawn>();
+    private static void FlushDespawn(double _) => _markedDespawn.Despawn();
 }
