@@ -27,7 +27,7 @@ public static class ECS
     }
 
     public static Entity QueueDespawn(Entity entity) => entity.Add<MarkDespawn>();
-
+    
     public static string Name(Entity entity)
     {
         if (entity.Has<Name>())

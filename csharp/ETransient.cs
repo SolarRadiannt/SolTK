@@ -11,7 +11,7 @@ public class ETransient : ISystem, IProcessable
     public int Priority => SPriority.Flush;
     public void Init() => Scheduler.Register(this);
 
-	public static Entity Spawn(string? name) =>
+	public static Entity Spawn(string? name = null) =>
 		ECS.Entity(name)
 			.Add<Transient>();
     
