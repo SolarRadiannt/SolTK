@@ -1,63 +1,110 @@
 namespace SolTK;
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
-
 
 public static class EventBus
 {
-    // Dictionary of Type -> List of (Priority, Handler)
-    private static readonly Dictionary<Type, List<(int Priority, Delegate Handler)>> _globalHandlers = [];
-    private static readonly Dictionary<Type, List<(int Priority, Delegate Handler)>> _localHandlers = [];
+    public delegate void RefAction<T>(ref T ev);
+    public delegate void LocalRefAction<T>(Entity target, ref T ev);
 
-    // --- GLOBAL EVENTS ---
-    public static void Subscribe<T>(Action<T> handler, int priority = 0)
+    // Per-event-type static storage. The CLR gives each closed generic
+    // its own static fields, so this is effectively a compile-time
+    // dictionary with zero lookup cost in the hot path.
+    private static class Global<T>
     {
-        var list = _globalHandlers.GetOrAdd(typeof(T));
-        list.Add((priority, handler));
-        // Sort ascending so lowest priority runs first (or descending, based on your preference)
-        list.Sort((a, b) => a.Item1.CompareTo(b.Item1)); 
+        public static readonly List<(int Priority, RefAction<T> Handler)> Subs = [];
+        public static RefAction<T>[] Cache = Array.Empty<RefAction<T>>();
+        public static bool Dirty = true;
     }
 
-    public static void Raise<T>(T ev)
+    private static class Local<T>
     {
-        if (_globalHandlers.TryGetValue(typeof(T), out var list))
+        public static readonly List<(int Priority, LocalRefAction<T> Handler)> Subs = [];
+        public static LocalRefAction<T>[] Cache = Array.Empty<LocalRefAction<T>>();
+        public static bool Dirty = true;
+    }
+
+    // ------------------- GLOBAL EVENTS -------------------
+
+    public static void Subscribe<T>(RefAction<T> handler, int priority = 0)
+    {
+        var subs = Global<T>.Subs;
+        subs.Add((priority, handler));
+        subs.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+        Global<T>.Dirty = true;
+    }
+
+    public static void Unsubscribe<T>(RefAction<T> handler)
+    {
+        var subs = Global<T>.Subs;
+        for (int i = subs.Count - 1; i >= 0; i--)
         {
-            // Iterate backwards to safely allow unsubscribe during iteration if needed
-            for (int i = list.Count - 1; i >= 0; i--)
-            {
-                ((Action<T>)list[i].Handler).Invoke(ev);
-            }
+            if (subs[i].Handler == handler)
+                subs.RemoveAt(i);
         }
+        Global<T>.Dirty = true;
     }
 
-    // --- DIRECTED / LOCAL EVENTS ---
-    public static void SubscribeLocal<T>(Action<Entity, T> handler, int priority = 0)
+    public static void Raise<T>(ref T ev)
     {
-        var list = _localHandlers.GetOrAdd(typeof(T));
-        list.Add((priority, handler));
-        list.Sort((a, b) => a.Item1.CompareTo(b.Item1));
+        if (Global<T>.Dirty)
+            RebuildGlobalCache<T>();
+
+        var cache = Global<T>.Cache;
+        for (int i = 0; i < cache.Length; i++)
+            cache[i](ref ev);
     }
 
-    public static void RaiseLocal<T>(Entity target, T ev)
+    private static void RebuildGlobalCache<T>()
     {
-        if (_localHandlers.TryGetValue(typeof(T), out var list))
-        {
-            for (int i = list.Count - 1; i >= 0; i--)
-            {
-                ((Action<Entity, T>)list[i].Handler).Invoke(target, ev);
-            }
-        }
+        var subs = Global<T>.Subs;
+        var cache = new RefAction<T>[subs.Count];
+        for (int i = 0; i < subs.Count; i++)
+            cache[i] = subs[i].Handler;
+
+        Global<T>.Cache = cache;
+        Global<T>.Dirty = false;
     }
-    
-    // Helper to get or create the list
-    private static List<(int, Delegate)> GetOrAdd(this Dictionary<Type, List<(int, Delegate)>> dict, Type type)
+
+    // ------------------- LOCAL EVENTS -------------------
+
+    public static void SubscribeLocal<T>(LocalRefAction<T> handler, int priority = 0)
     {
-        if (!dict.TryGetValue(type, out var list))
-        {
-            list = [];
-            dict[type] = list;
-        }
-        return list;
+        var subs = Local<T>.Subs;
+        subs.Add((priority, handler));
+        subs.Sort((a, b) => a.Priority.CompareTo(b.Priority));
+        Local<T>.Dirty = true;
+    }
+
+    public static void UnsubscribeLocal<T>(LocalRefAction<T> handler)
+    {
+        var subs = Local<T>.Subs;
+        for (int i = subs.Count - 1; i >= 0; i--)
+            if (subs[i].Handler == handler)
+                subs.RemoveAt(i);
+        
+        Local<T>.Dirty = true;
+    }
+
+    public static void RaiseLocal<T>(Entity target, ref T ev)
+    {
+        if (Local<T>.Dirty)
+            RebuildLocalCache<T>();
+
+        var cache = Local<T>.Cache;
+        for (int i = 0; i < cache.Length; i++)
+            cache[i](target, ref ev);
+    }
+
+    private static void RebuildLocalCache<T>()
+    {
+        var subs = Local<T>.Subs;
+        var cache = new LocalRefAction<T>[subs.Count];
+        for (int i = 0; i < subs.Count; i++)
+            cache[i] = subs[i].Handler;
+
+        Local<T>.Cache = cache;
+        Local<T>.Dirty = false;
     }
 }

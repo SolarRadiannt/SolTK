@@ -36,6 +36,6 @@ public static class ECS
             return entity.ToRaw().ToString();
     }
 
-    private static Stream<MarkDespawn> _markedDespawn = World.Stream<MarkDespawn>();
+    private static readonly Stream<MarkDespawn> _markedDespawn = World.Stream<MarkDespawn>();
     private static void FlushDespawn(double _) => _markedDespawn.Despawn();
 }

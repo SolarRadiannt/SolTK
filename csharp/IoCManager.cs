@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-public interface ISystem
+public interface IService
 {
     public void Init();
 }
@@ -24,7 +24,7 @@ public static class IoCManager
         targetAssembly ??= Assembly.GetCallingAssembly();
 
         var systemTypes = targetAssembly.GetTypes()
-            .Where(t => t.IsClass && !t.IsAbstract && typeof(ISystem).IsAssignableFrom(t))
+            .Where(t => t.IsClass && !t.IsAbstract && typeof(IService).IsAssignableFrom(t))
             .ToList();
 
         foreach (var type in systemTypes)
@@ -45,7 +45,7 @@ public static class IoCManager
 
         foreach (var instance in _services.Values)
         {
-            if (instance is ISystem system)
+            if (instance is IService system)
             {
                 try { system.Init(); }
                 catch (Exception ex) { OnError(instance.GetType().Name, ex); }
@@ -53,7 +53,7 @@ public static class IoCManager
         }
     }
 
-    private static void InjectDependencies(object target)
+    public static void InjectDependencies(object target)
     {
         var fields = target.GetType().GetFields(
             BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
@@ -69,5 +69,20 @@ public static class IoCManager
                 throw new InvalidOperationException(
                     $"Dependency {depType.Name} required by {target.GetType().Name} was not found!");
         }
+    }
+
+        // 2. Add a Resolve method for manual retrieval
+    public static T Resolve<T>() where T : class
+    {
+        if (_services.TryGetValue(typeof(T), out var instance))
+            return (T)instance;
+        
+        throw new InvalidOperationException($"Service {typeof(T).Name} not found!");
+    }
+
+    // 3. Add a Register method for manual injection
+    public static void Register<T>(T instance) where T : class
+    {
+        _services[typeof(T)] = instance;
     }
 }
