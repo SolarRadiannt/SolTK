@@ -3,7 +3,7 @@ using fennecs;
 using SolTK.Components;
 public struct Transient;
 
-public class ETransient : ISystem, IProcessable
+public class ETransient : IService, IProcessable
 {
 	private static World _world = ECS.World;
     private static readonly Stream<Transient> _transients = _world.Stream<Transient>();
