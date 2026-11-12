@@ -1,15 +1,13 @@
 namespace SolTK;
 
-using SolTK.Components;
 using fennecs;
-
-
 
 public static class ECS
 {
+    private static readonly Stream<MarkDespawn> _markedDespawn = World.Stream<MarkDespawn>();
     static ECS()
     {
-        Scheduler.Register(FlushDespawn, STKPriority.Flush);
+        Scheduler.Register(_ => _markedDespawn.Despawn(), STKPriority.Flush);
     }
 
     private static readonly Lazy<World> _world = new(
@@ -21,7 +19,7 @@ public static class ECS
     {
         var entity = World.Spawn();
         if (name != null)
-            entity.Add(new Name(name));
+            entity.Add<Name>(name);
         
         return entity;
     }
@@ -35,7 +33,4 @@ public static class ECS
         else
             return entity.ToRaw().ToString();
     }
-
-    private static readonly Stream<MarkDespawn> _markedDespawn = World.Stream<MarkDespawn>();
-    private static void FlushDespawn(double _) => _markedDespawn.Despawn();
 }

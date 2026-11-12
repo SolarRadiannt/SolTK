@@ -1,5 +1,4 @@
 namespace SolTK;
-using SolTK.Components;
 
 public struct EventEntity;
 public struct EventCancelled;
