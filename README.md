@@ -18,7 +18,11 @@ Currently the only supported language. Includes optional framework-like behavior
 | `ECS` | Lazy-initialized static World with auto-despawn system for `MarkDespawn` entities. |
 | `ETransient` | Transient entity tag + template with auto-despawn scheduling. |
 | `EEvent` | Event entity tag + template for decoupled events. |
-| `Central Clock` | Static clock with separate `RealNow` and `SimNow` with optional TimeScale and pause Simulation; requires manual ticks. |
+| `CentralClock` | Static clock with separate `RealNow` and `SimNow` with optional TimeScale and pause Simulation; requires manual ticks. |
+| `EventBus` | Static and centralized EventBus that have Raise<T>(ref T ev) to raise an event that subscribed to the T type via Subscribe<T>( (T _) => {} ). Also support RaiseLocal<T>(Entity ent, ref T ev) that passes entity as the first paramater onto SubscribeLocal<T>( (Entity ent, ref T ev) => {} ) |
+
+### Extensibility
+**Error Handling:** `IoCManager` and `Scheduler` expose a static `OnError` hook (`Action<string, Exception>`) that defaults to `Console.WriteLine`. This can be overridden anywhere to route errors to a specific engine (e.g., Godot's `GD.PushError` or Unity's `Debug.LogError`) or a custom logging framework.
 
 ## Future Plans
 Add more language toolkits as needed.
