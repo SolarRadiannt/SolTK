@@ -9,49 +9,27 @@ public interface IProcessable
     public void Process(double delta);
 }
 
-public static class SPriority
-{
-    // Generic priorities v
-    public static readonly int Lowest  = -100_000;
-    public static readonly int Lower   = -10_000;
-    public static readonly int Low     = -1_000;
-    public static readonly int High    = 1_000;
-    public static readonly int Higher  = 10_000;
-    public static readonly int Highest = 100_000;
-    
-    // Higher level priorities
-    public static readonly int Flush          = -10_000_000;
-    public static readonly int Init           = 10_000_000;
-    public static readonly int Action         = Higher;
-    public static readonly int Interception   = High + 200;
-    public static readonly int Transformation = High + 100;
-    public static readonly int Applying       = High;
-    public static readonly int Default        = 0;
-}
-
 public static class Scheduler
 {
     private static List<(Action<double>, int)> _systems = [];
-    private static List<(Action<double>, int)> _physicsSystems = [];
+    private static List<(Action<double>, int)> _simulationSystems = [];
     
-    // The user can override this anywhere (Godot, Unity, Console)
+    // Overrideable anywhere (Godot, Unity, Console)
     public static Action<string, Exception> OnError = (systemName, ex) =>
         Console.WriteLine($"Error in system {systemName}: {ex.Message}");
     
-    public static void Register(IProcessable system)
-    {
+
+    public static void Register(IProcessable system) =>
         Register(system.Process, system.Priority);
-    }
     
-    public static void RegisterPhysics(IProcessable system)
-    {
-        RegisterPhysics(system.Process, system.Priority);
-    }
+    public static void RegisterSimulation(IProcessable system) =>
+        RegisterSimulation(system.Process, system.Priority);
     
-    public static void RegisterPhysics(Action<double> system, int priority)
+
+    public static void RegisterSimulation(Action<double> system, int priority)
     {
-        _physicsSystems.Add((system, priority));
-        _physicsSystems = [.. _physicsSystems.OrderBy(data => data.Item2)];
+        _simulationSystems.Add((system, priority));
+        _simulationSystems = [.. _simulationSystems.OrderBy(data => data.Item2)];
     }
     
     public static void Register(Action<double> system, int priority)
@@ -64,8 +42,8 @@ public static class Scheduler
         ProcessList(_systems, delta);
     
 
-    public static void ProcessAllPhysics(double delta) =>
-        ProcessList(_physicsSystems, delta);
+    public static void ProcessAllSimulation(double delta) =>
+        ProcessList(_simulationSystems, delta);
     
     
     private static void ProcessList(List<(Action<double>, int)> systems, double delta)
