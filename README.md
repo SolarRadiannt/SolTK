@@ -18,7 +18,7 @@ Currently the only supported language. Includes optional framework-like behavior
 | `ECS` | Lazy-initialized static World with auto-despawn system for `MarkDespawn` entities. |
 | `ETransient` | Transient entity tag + template with auto-despawn scheduling. |
 | `EEvent` | Event entity tag + template for decoupled events. |
-| `CentralClock` | Static clock with separate `RealNow` and `SimNow` with optional TimeScale and pause Simulation; requires manual ticks. |
+| `CentralClock` | Static clock with separate `RealNow` and `SimNow` with optional TimeScale for how much a tick contribute to the Simulation time; requires manual ticks. |
 | `EventBus` | Static centralized event bus with type-based `Subscribe`/`Raise` for global events and entity-scoped `SubscribeLocal`/`RaiseLocal` for local events. |
 
 ### Extensibility
