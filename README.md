@@ -1,4 +1,4 @@
-# Solar's ToolKit ()
+# Solar's ToolKit (SolTK)
 
 **Status:** In Progress (ongoing personal toolkit)
 **Stack:** C# (.NET)
