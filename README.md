@@ -1,5 +1,5 @@
 MonoRepo for my personal toolkits.
-Will later be used for various languages.
+This toolkit is a Utility-First (with optional framework like behavior with IoCManager in C#) and is supposed to be very generic so that it is transferable to almost any projects.
 
 Currently only has C#.
 
