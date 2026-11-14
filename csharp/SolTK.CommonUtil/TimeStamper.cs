@@ -2,7 +2,6 @@ namespace SolTK.CommonUtil;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 /// <summary>
 /// A utility for tracking timestamps and managing cooldowns/intervals.
@@ -10,7 +9,7 @@ using System.Diagnostics;
 /// </summary>
 public class TimeStamper : IDisposable
 {
-    private static TimeSpan Now => TimeUtil.SimNow;
+    private static TimeSpan Now => CentralClock.SimNow;
 
     private readonly Dictionary<string, TimeSpan> _timestamps = [];
 
