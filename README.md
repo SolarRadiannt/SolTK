@@ -7,7 +7,7 @@
 ## Overview
 Mono-repo for my personal toolkits. This toolkit is utility-first and designed to be very generic, so it is transferable to almost any project.
 
-## C# (`/csharp`)
+## C# (`SolTK/csharp`)
 Currently the only supported language. Includes optional framework-like behavior via `IoCManager`.
 
 ### Current Tools
